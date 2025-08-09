@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Themeable Colors - ClapperLabs Color Scheme */
+    --background: 220 30% 12%; /* Dark navy background */
+    --foreground: 210 20% 95%; /* Light text */
+
+    --muted: 220 25% 18%; /* Darker navy for muted elements */
+    --muted-foreground: 210 15% 70%; /* Muted text */
+
+    --card: 220 25% 15%; /* Card background */
+    --card-foreground: 210 20% 95%;
+
+    --popover: 220 30% 12%;
+    --popover-foreground: 210 20% 95%;
+
+    /* Primary - Coral/Orange from logo */
+    --primary: 12 85% 65%; /* Coral color */
+    --primary-foreground: 220 30% 12%; /* Dark text on coral */
+    --primary-dark: 12 85% 55%;
+    --primary-light: 12 85% 75%;
+
+    /* Secondary - Cyan from logo */
+    --secondary: 190 85% 55%; /* Cyan color */
+    --secondary-foreground: 220 30% 12%; /* Dark text on cyan */
+
+    /* Coral accent */
+    --coral: 12 85% 65%;
+    --coral-foreground: 220 30% 12%;
+    --coral-light: 12 85% 75%;
+
+    /* Cyan accent */
+    --cyan: 190 85% 55%;
+    --cyan-foreground: 220 30% 12%;
+    --cyan-light: 190 85% 65%;
+
+    --accent: 220 25% 20%;
+    --accent-foreground: 210 20% 95%;
+
+    --border: 220 20% 25%; /* Subtle borders */
+    --input: 220 25% 18%;
+    --ring: 12 85% 65%; /* Coral ring color */
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 95%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html,
+  body {
+    @apply h-full;
+  }
+}
