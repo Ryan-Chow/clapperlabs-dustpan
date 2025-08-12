@@ -8,6 +8,7 @@ import hashlib
 from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
+from typing import List, Dict
 
 def validate_video_file(file_path: str) -> bool:
     """Validate that a file is a supported video format"""

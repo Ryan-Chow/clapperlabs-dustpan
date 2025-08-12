@@ -49,15 +49,10 @@ Your CLI automatically:
 
 ### Step 1: Initial Setup
 ```bash
-# 1. Create your project
-mkdir capcut-cli && cd capcut-cli
 
-# 2. Add original capcut-mcp
+# 1. Add original capcut-mcp
 git submodule add https://github.com/fancyboi999/capcut-mcp.git capcut-mcp
-
-# 3. Create your CLI structure
-mkdir -p src/utils config/prompts templates output/drafts
-```
+#(This is already done)
 
 ### Step 2: Install Dependencies
 ```bash

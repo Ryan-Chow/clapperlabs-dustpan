@@ -1,0 +1,115 @@
+{
+  "capcut_mcp_url": "http://localhost:9000",
+  "anthropic_model": "claude-3-sonnet-20240229",
+  "output_dir": "output/drafts",
+  "temp_dir": "temp",
+  "ffmpeg_path": "ffmpeg",
+  "ffprobe_path": "ffprobe",
+  "capcut_drafts_folder": "",
+  
+  "editing_presets": {
+    "social_media": {
+      "target_duration": 60,
+      "aspect_ratio": "9:16",
+      "style": "fast_paced",
+      "add_captions": true,
+      "music_volume": 0.3,
+      "effects": ["zoom", "fade"],
+      "text_style": {
+        "font": "Source Han Sans",
+        "color": "#FFFFFF",
+        "size": 32.0,
+        "position": "center"
+      }
+    },
+    "highlight_reel": {
+      "target_duration": 90,
+      "aspect_ratio": "16:9",
+      "style": "dynamic",
+      "add_captions": false,
+      "music_volume": 0.5,
+      "effects": ["cut", "zoom", "speed_ramp"],
+      "text_style": {
+        "font": "Source Han Sans",
+        "color": "#FFD700",
+        "size": 36.0,
+        "position": "bottom"
+      }
+    },
+    "tutorial": {
+      "target_duration": 300,
+      "aspect_ratio": "16:9",
+      "style": "clean",
+      "add_captions": true,
+      "music_volume": 0.1,
+      "effects": ["fade", "highlight"],
+      "text_style": {
+        "font": "Source Han Sans",
+        "color": "#000000",
+        "size": 28.0,
+        "position": "bottom"
+      }
+    },
+    "vlog": {
+      "target_duration": 180,
+      "aspect_ratio": "16:9",
+      "style": "casual",
+      "add_captions": true,
+      "music_volume": 0.2,
+      "effects": ["fade", "color_grade"],
+      "text_style": {
+        "font": "Source Han Sans",
+        "color": "#FFFFFF",
+        "size": 30.0,
+        "position": "center"
+      }
+    }
+  },
+  
+  "ai_settings": {
+    "max_tokens": 2000,
+    "temperature": 0.7,
+    "analysis_detail_level": "medium",
+    "enable_content_analysis": true,
+    "enable_scene_detection": true,
+    "min_segment_duration": 3.0,
+    "max_cuts_per_minute": 2
+  },
+  
+  "video_processing": {
+    "max_file_size_mb": 500,
+    "supported_formats": [".mp4", ".mov", ".avi", ".mkv", ".m4v", ".wmv", ".flv", ".webm"],
+    "thumbnail_timestamp_ratio": 0.3,
+    "preview_duration": 10,
+    "auto_optimize_for_capcut": true,
+    "preserve_original_audio": true
+  },
+  
+  "capcut_compatibility": {
+    "preferred_codec": "libx264",
+    "preferred_audio_codec": "aac",
+    "max_resolution": "4k",
+    "supported_fps": [24, 25, 30, 50, 60],
+    "force_keyframe_interval": 2
+  },
+  
+  "audio_settings": {
+    "background_music_folder": "assets/music",
+    "default_music_volume": 0.3,
+    "auto_normalize_audio": true,
+    "subtitle_generation": {
+      "enabled": true,
+      "language": "auto",
+      "max_words_per_line": 8,
+      "min_display_duration": 1.0
+    }
+  },
+  
+  "output_settings": {
+    "auto_organize_by_date": true,
+    "create_backups": true,
+    "cleanup_temp_files": true,
+    "generate_thumbnails": true,
+    "create_editing_report": true
+  }
+}

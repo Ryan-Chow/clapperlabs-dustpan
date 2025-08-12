@@ -17,15 +17,16 @@ from utils.file_utils import ensure_output_dir, generate_unique_name
 from utils.video_utils import get_video_info
 
 class CapCutCLI:
-    def __init__(self, config_path: str = "config/config.json", verbose: bool = False):
+    def __init__(self, config_path: str = "config/config.json", verbose: bool = False, 
+             start_server: bool = False, server_port: int = 9000): 
         self.config = Config(config_path)
         self.verbose = verbose
-        self.capcut_api = CapCutAPI(self.config)
+        self.capcut_api = CapCutAPI(self.config, start_server=start_server, server_port=server_port)
         self.ai_director = AIDirector(self.config)
         self.video_analyzer = VideoAnalyzer(self.config)
         
         # Ensure output directory exists
-        ensure_output_dir(self.config.output_dir)
+        ensure_output_dir(self.config.get('output_dir', 'output/drafts'))
         
         if self.verbose:
             print("✅ CapCut CLI initialized successfully")

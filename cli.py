@@ -8,29 +8,39 @@ import os
 import sys
 from pathlib import Path
 from typing import Optional, List
+import traceback
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.main import CapCutCLI
-from config import load_config
+from src.config import Config
 from src.utils.file_utils import validate_video_file, ensure_output_dir
 
 @click.group()
 @click.option('--config', '-c', default='config/config.json', help='Configuration file path')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+@click.option('--start-server', is_flag=True, help='Start MCP server automatically (default: connect to existing)')
 @click.pass_context
-def cli(ctx, config: str, verbose: bool):
+def cli(ctx, config: str, verbose: bool, start_server: bool):
     """CapCut CLI - AI-powered video editing tool"""
     ctx.ensure_object(dict)
     ctx.obj['config_path'] = config
     ctx.obj['verbose'] = verbose
+    ctx.obj['start_server'] = start_server
     
     # Initialize the CLI app
     try:
-        ctx.obj['app'] = CapCutCLI(config_path=config, verbose=verbose)
+        ctx.obj['app'] = CapCutCLI(
+            config_path=config, 
+            verbose=verbose,
+            start_server=start_server  # <-- SIMPLE!
+        )
     except Exception as e:
         click.echo(f"❌ Failed to initialize CapCut CLI: {e}", err=True)
+        if verbose:
+            tb = traceback.format_exc()
+            click.echo(tb, err=True)
         sys.exit(1)
 
 @cli.command()
@@ -90,8 +100,8 @@ def edit(ctx, input_video: str, style: str, duration: Optional[int], output: Opt
     except Exception as e:
         click.echo(f"❌ Unexpected error: {e}", err=True)
         if verbose:
-            import traceback
-            traceback.print_exc()
+            tb = traceback.format_exc()
+            click.echo(tb, err=True)
 
 @cli.command()
 @click.argument('input_directory', type=click.Path(exists=True, file_okay=False))
@@ -189,6 +199,23 @@ def analyze(ctx, input_video: str):
         click.echo(f"❌ Analysis failed: {e}", err=True)
 
 @cli.command()
+@click.option('--port', type=int, default=9000, help='Port to check for server')
+def check_server(port: int):
+    """Check if MCP server is running"""
+    
+    import socket
+    
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            result = s.connect_ex(('localhost', port))
+            if result == 0:
+                click.echo(f"✅ MCP server is running on port {port}")
+            else:
+                click.echo(f"❌ No server found on port {port}")
+    except Exception as e:
+        click.echo(f"❌ Error checking server: {e}")
+
+@cli.command()
 def setup():
     """Setup CapCut CLI configuration"""
     
@@ -224,7 +251,11 @@ def setup():
             f.write(f"ANTHROPIC_API_KEY={api_key}\n")
         click.echo("✅ API key saved to .env")
     
-    click.echo("\n🎉 Setup completed! Run 'python cli.py edit --help' to get started.")
+    click.echo("\n🎉 Setup completed!")
+    click.echo("💡 Usage:")
+    click.echo("  - Start your MCP server manually first")
+    click.echo("  - Then run: python cli.py --no-server edit video.mp4 --style social_media")
+    click.echo("  - Or check server status: python cli.py check-server")
 
 if __name__ == '__main__':
     cli()

@@ -12,14 +12,14 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 
 class CapCutAPI:
-    def __init__(self, config):
+    def __init__(self, config, start_server: bool = False, server_port: int = 9000):  # Default False
         self.config = config
-        self.base_url = config.get('capcut_mcp_url', 'http://localhost:9000')
+        self.base_url = config.get('capcut_mcp_url', f'http://localhost:{server_port}')
         self.capcut_mcp_path = Path("capcut-mcp")
         self.server_process = None
         
-        # Ensure the original capcut-mcp server is running
-        self._ensure_server_running()
+        # Always just check connection, never start server
+        self._check_existing_server()
     
     def _ensure_server_running(self):
         """Start the original capcut-mcp server if not running"""
@@ -51,6 +51,31 @@ class CapCutAPI:
             time.sleep(3)
         
         print("✅ CapCut MCP server ready")
+
+    def _check_existing_server(self):
+        """Check if server is already running without starting it"""
+        try:
+            response = requests.get(f"{self.base_url}/", timeout=5)  # Try root endpoint instead of /health
+            if response.status_code in [200, 404]:  # 404 is OK, means server is running
+                print("✅ Connected to existing CapCut MCP server")
+                return True
+        except requests.exceptions.RequestException:
+            pass
+        
+        # Try a simple connection test
+        import socket
+        try:
+            host, port = self.base_url.replace('http://', '').split(':')
+            port = int(port)
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(2)
+                if s.connect_ex((host, port)) == 0:
+                    print("✅ Connected to existing CapCut MCP server")
+                    return True
+        except Exception:
+            pass
+        
+        raise Exception(f"Cannot connect to existing CapCut MCP server at {self.base_url}")
     
     def create_draft_from_plan(self, input_video: str, editing_plan: Dict[str, Any], 
                               output_name: str) -> Dict[str, Any]:

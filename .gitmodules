@@ -1,0 +1,3 @@
+[submodule "capcut-cli/capcut-mcp"]
+	path = capcut-cli/capcut-mcp
+	url = https://github.com/fancyboi999/capcut-mcp.git
