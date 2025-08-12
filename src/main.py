@@ -41,24 +41,35 @@ class CapCutCLI:
         
         try:
             # Step 1: Analyze the video
-            if self.verbose:
-                print("🔍 Analyzing video content...")
+            print("🔍 Analyzing video content...")
             
             video_info = self.video_analyzer.analyze_video(input_path)
+            print(f"✅ Video analysis completed: {len(video_info)} fields")
+            print(f"📊 Video duration: {video_info.get('duration', 'Unknown')}s")
+            print(f"📐 Resolution: {video_info.get('width', 'Unknown')}x{video_info.get('height', 'Unknown')}")
             
             # Step 2: Get AI editing decisions
-            if self.verbose:
-                print("🤖 Getting AI editing recommendations...")
+            print("🤖 Getting AI editing recommendations...")
+            print(f"🤖 AI Director object: {self.ai_director}")
+            print(f"🤖 Video info keys: {list(video_info.keys())}")
             
-            editing_plan = self.ai_director.create_editing_plan(
-                video_info=video_info,
-                style=style,
-                target_duration=duration,
-                quality=quality,
-                aspect_ratio=aspect_ratio,
-                add_music=add_music,
-                auto_subtitles=auto_subtitles
-            )
+            try:
+                editing_plan = self.ai_director.create_editing_plan(
+                    video_info=video_info,
+                    style=style,
+                    target_duration=duration,
+                    quality=quality,
+                    aspect_ratio=aspect_ratio,
+                    add_music=add_music,
+                    auto_subtitles=auto_subtitles
+                )
+                print(f"✅ AI editing plan created successfully")
+            except Exception as e:
+                print(f"❌ Error creating AI editing plan: {e}")
+                print(f"❌ Exception type: {type(e)}")
+                import traceback
+                print(f"❌ Traceback: {traceback.format_exc()}")
+                raise
             
             # Step 3: Create CapCut draft
             if self.verbose:

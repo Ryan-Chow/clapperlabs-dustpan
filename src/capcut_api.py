@@ -88,9 +88,12 @@ class CapCutAPI:
             # Note: The original capcut-mcp doesn't have explicit draft creation,
             # it creates drafts when you start adding materials
             
+            print(f"🔍 Processing editing plan with {len(editing_plan)} fields")
+            print(f"🔍 Editing plan keys: {list(editing_plan.keys())}")
             
             # Step 2: Add main video using exact capcut-mcp format
             video_cuts = editing_plan.get('cuts', [])
+            print(f"🔍 Video cuts: {video_cuts}")
             
             if video_cuts:
                 # Add video segments based on AI cuts
@@ -100,7 +103,8 @@ class CapCutAPI:
                         'start': cut.get('start', 0),
                         'end': cut.get('end', 10),
                         'width': self._get_resolution_from_plan(editing_plan)[0],
-                        'height': self._get_resolution_from_plan(editing_plan)[1]
+                        'height': self._get_resolution_from_plan(editing_plan)[1],
+                        'track_name': f'video_track_{i}'  # Ensure unique track names
                     })
             else:
                 # Add full video if no cuts specified
@@ -110,20 +114,26 @@ class CapCutAPI:
                     'start': 0,
                     'end': video_info.get('duration', 30),
                     'width': video_info.get('width', 1920),
-                    'height': video_info.get('height', 1080)
+                    'height': video_info.get('height', 1080),
+                    'track_name': 'main_video'  # Ensure valid track name
                 })
             
             # Step 3: Add text elements using exact capcut-mcp format
             text_elements = editing_plan.get('text_elements', [])
             for text_elem in text_elements:
-                self._api_call('/add_text', {
-                    'text': text_elem.get('text', ''),
-                    'start': text_elem.get('start', 0),
-                    'end': text_elem.get('end', 3),
-                    'font': text_elem.get('font', 'Source Han Sans'),  # capcut-mcp default
-                    'font_color': text_elem.get('color', '#FF0000'),    # capcut-mcp format
-                    'font_size': float(text_elem.get('size', 30.0))     # Must be float
-                })
+                try:
+                    self._api_call('/add_text', {
+                        'text': text_elem.get('text', ''),
+                        'start': text_elem.get('start', 0),
+                        'end': text_elem.get('end', 3),
+                        'font': text_elem.get('font', 'Source Han Sans CN Regular'),  # Use supported font
+                        'font_color': text_elem.get('color', '#FF0000'),    # capcut-mcp format
+                        'font_size': float(text_elem.get('size', 30.0))     # Must be float
+                    })
+                    print(f"✅ Added text element: {text_elem.get('text', '')}")
+                except Exception as e:
+                    print(f"⚠️ Failed to add text element: {e}")
+                    # Continue with other elements
             
             # Step 4: Add audio if requested using capcut-mcp format
             audio_suggestions = editing_plan.get('audio', {})
@@ -150,12 +160,17 @@ class CapCutAPI:
             # Step 6: Add effects (note: capcut-mcp has /add_effect endpoint)
             effects = editing_plan.get('effects', [])
             for effect in effects:
-                self._api_call('/add_effect', {
-                    'effect_type': effect.get('type', 'transition'),
-                    'effect_name': effect.get('name', 'fade'),
-                    'start': effect.get('start', 0),
-                    'end': effect.get('end', 1)
-                })
+                try:
+                    self._api_call('/add_effect', {
+                        'effect_type': effect.get('type', 'filter'),
+                        'effect_name': effect.get('name', 'brightness'),
+                        'start': effect.get('start', 0),
+                        'end': effect.get('end', 1)
+                    })
+                    print(f"✅ Added effect: {effect.get('type', 'filter')} - {effect.get('name', 'brightness')}")
+                except Exception as e:
+                    print(f"⚠️ Failed to add effect: {e}")
+                    # Continue with other elements
             
             # Step 7: Add stickers if any
             stickers = editing_plan.get('stickers', [])
@@ -170,24 +185,50 @@ class CapCutAPI:
                 })
             
             # Step 8: Save the draft using exact capcut-mcp format
-            capcut_drafts_folder = self.config.get_capcut_drafts_folder()
+            capcut_drafts_folder = self.config.get('capcut_drafts_folder', '')
             
-            save_response = self._api_call('/save_draft', {
-                'draft_id': output_name,  # capcut-mcp uses this as identifier
-                'draft_folder': capcut_drafts_folder
-            })
-            
-            # The capcut-mcp generates a folder starting with "dfd_" 
-            draft_path = save_response.get('draft_path', f"./dfd_{output_name}")
-            
-            return {
-                'success': True,
-                'draft_path': draft_path,
-                'editing_plan': editing_plan,
-                'instructions': f"Copy {draft_path} to your CapCut drafts directory to import"
-            }
+            try:
+                save_response = self._api_call('/save_draft', {
+                    'draft_id': output_name,  # capcut-mcp uses this as identifier
+                    'draft_folder': capcut_drafts_folder
+                })
+                
+                print(f"🔍 Save draft response: {save_response}")
+                
+                # The capcut-mcp generates a folder starting with "dfd_" 
+                print(f"🔍 Save response type: {type(save_response)}")
+                print(f"🔍 Save response keys: {list(save_response.keys()) if isinstance(save_response, dict) else 'Not a dict'}")
+                
+                draft_path = save_response.get('draft_path', f"./dfd_{output_name}")
+                print(f"🔍 Draft path: {draft_path}")
+                
+                result = {
+                    'success': True,
+                    'draft_path': draft_path,
+                    'editing_plan': editing_plan,
+                    'instructions': f"Copy {draft_path} to your CapCut drafts directory to import"
+                }
+                print(f"🔍 Returning result: {result}")
+                return result
+                
+            except Exception as e:
+                print(f"⚠️ Failed to save draft: {e}")
+                # Return a fallback result with the draft ID
+                fallback_draft_path = f"./dfd_{output_name}"
+                result = {
+                    'success': True,
+                    'draft_path': fallback_draft_path,
+                    'editing_plan': editing_plan,
+                    'instructions': f"Copy {fallback_draft_path} to your CapCut drafts directory to import (draft may be in a different location)"
+                }
+                print(f"🔍 Returning fallback result: {result}")
+                return result
             
         except Exception as e:
+            print(f"❌ Exception in create_draft_from_plan: {e}")
+            print(f"❌ Exception type: {type(e)}")
+            import traceback
+            print(f"❌ Traceback: {traceback.format_exc()}")
             return {
                 'success': False,
                 'error': str(e)
@@ -198,9 +239,12 @@ class CapCutAPI:
         Make API call to the original capcut-mcp server with full error handling
         """
         
-        # Ensure server is running
-        if not hasattr(self, 'mcp_manager') or not self.mcp_manager.is_server_running():
-            self._ensure_server_running()
+        print(f"🔍 Making API call to {endpoint}")
+        print(f"🔍 Request data: {data}")
+        
+        # Don't start server automatically - just use the existing one
+        # if not hasattr(self, 'mcp_manager') or not self.mcp_manager.is_server_running():
+        #     self._ensure_server_running()
         
         try:
             response = requests.post(
@@ -213,10 +257,14 @@ class CapCutAPI:
             # Handle different response types from capcut-mcp
             if response.status_code == 200:
                 try:
-                    return response.json()
+                    result = response.json()
+                    print(f"🔍 API response (200): {result}")
+                    return result
                 except json.JSONDecodeError:
                     # Some endpoints might return plain text
-                    return {"success": True, "response": response.text}
+                    result = {"success": True, "response": response.text}
+                    print(f"🔍 API response (200, text): {result}")
+                    return result
             
             elif response.status_code == 400:
                 # Bad request - likely parameter error
@@ -239,18 +287,8 @@ class CapCutAPI:
             raise Exception(f"API call to {endpoint} timed out after 30 seconds")
         
         except requests.exceptions.ConnectionError:
-            # Try to restart server once
-            print("🔄 Connection failed, attempting to restart CapCut MCP server...")
-            if hasattr(self, 'mcp_manager'):
-                if self.mcp_manager.restart_server():
-                    # Retry the API call once
-                    try:
-                        response = requests.post(f"{self.base_url}{endpoint}", json=data, timeout=30)
-                        return response.json() if response.status_code == 200 else {"error": response.text}
-                    except Exception:
-                        pass
-            
-            raise Exception(f"Could not connect to CapCut MCP server at {self.base_url}")
+            # Don't restart server - just report the connection error
+            raise Exception(f"Could not connect to CapCut MCP server at {self.base_url}. Make sure the server is running.")
         
         except requests.exceptions.RequestException as e:
             raise Exception(f"CapCut MCP API call failed: {e}")

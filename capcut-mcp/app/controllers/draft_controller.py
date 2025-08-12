@@ -1,3 +1,4 @@
+import json
 from fastapi.responses import JSONResponse
 from app.schemas import (
     CreateDraftRequest, 
@@ -112,8 +113,14 @@ async def query_script(request: QueryScriptRequest) -> JSONResponse:
         # Convert script object to JSON serializable dictionary
         script_str = script.dumps()
         
-        result.success = True
-        result.output = script_str
+        # Parse the JSON string back to a dictionary to avoid double serialization issues
+        try:
+            script_dict = json.loads(script_str)
+            result.success = True
+            result.output = script_dict
+        except json.JSONDecodeError as e:
+            result.error = f"Failed to parse script JSON: {str(e)}"
+            return JSONResponse(content=result.dict())
         return JSONResponse(content=result.dict())
 
     except Exception as e:

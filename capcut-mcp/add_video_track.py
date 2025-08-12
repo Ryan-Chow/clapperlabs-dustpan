@@ -73,19 +73,26 @@ def add_video_track(
     :return: Updated draft information, including draft_id and draft_url
     """
     # Get or create draft
+    print(f"🔍 Creating/getting draft with width={width}, height={height}")
     draft_id, script = get_or_create_draft(
         draft_id=draft_id,
         width=width,
         height=height
     )
+    print(f"✅ Draft created/retrieved: {draft_id}")
     
     # Check if video track exists, if not, add a default video track
+    print(f"🔍 Checking for existing video track...")
     try:
         script.get_track(draft.Track_type.video, track_name=None)
+        print(f"✅ Found existing video track")
     except exceptions.TrackNotFound:
+        print(f"📝 Adding default video track...")
         script.add_track(draft.Track_type.video, relative_index=0)
+        print(f"✅ Default video track added")
     except NameError:
         # If multiple video tracks exist (NameError), do nothing
+        print(f"ℹ️ Multiple video tracks exist, skipping default track creation")
         pass
 
     # Add video track (only when track doesn't exist)
@@ -210,10 +217,12 @@ def add_video_track(
             raise ValueError(f"Unsupported mask type {mask_type}, supported types include: linear, mirror, circle, rectangle, heart, star")
     
     # Add video segment to track
+    print(f"🔍 Adding video segment to track: {track_name}")
     # if imported_track is not None:
     #     imported_track.add_segment(video_segment)
     # else:
     script.add_segment(video_segment, track_name=track_name)
+    print(f"✅ Video segment added successfully")
     
     return {
         "draft_id": draft_id,
